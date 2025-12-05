@@ -21,7 +21,7 @@ export default NextAuth({
           where: { email: credentials.email },
         });
 
-        if (!user || user.hashedPassword) {
+        if (!user || !user.hashedPassword) {
           throw new Error("Invalid email or password");
         }
 
