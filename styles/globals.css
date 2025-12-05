@@ -11,3 +11,15 @@ body {
 html {
   @apply h-full;
 }
+
+/* Overlay gradient for large screens; becomes solid black on tablet/phone */
+.bg-overlay-gradient {
+  background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.9) 3%, rgba(0,0,0,0.6) 18%, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.70) 52%, rgba(0,0,0,0.75) 72%, rgba(0,0,0,0.95) 100%);
+}
+
+/* At screens equal or below 600px (tailwind 'lg' breakpoint ~= 600px), make overlay fully black */
+@media (max-width: 600px) {
+  .bg-overlay-gradient {
+    background: rgba(0, 0, 0, 1) !important;
+  }
+}
