@@ -2,11 +2,17 @@ import Input from "@/components/input";
 import AudioPlayer from "@/components/AudioPlayer";
 import React, { useCallback, useState } from "react";
 import axios from "axios";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/router";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 const Auth = () => {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [variant, setVariant] = useState("login");
 
   const toggleVariant = useCallback(() => {
@@ -15,25 +21,48 @@ const Auth = () => {
     );
   }, []);
 
-  const createAnAccount = useCallback(async() => {
+  const login = useCallback(async () => {
+    try {
+      await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: "/",
+      });
+
+      router.push("/");
+    } catch (error) {
+      console.log(error);
+    }
+  }, [email, password, router]);
+
+  const createAnAccount = useCallback(async () => {
     // Функція для реєстрації нового користувача через AJAX (axios)
     try {
-      await axios.post('/api/register', {
+      await axios.post("/api/register", {
         email,
-        password
-      })
-      // Тут можна додати логіку після успішної реєстрації (наприклад, редірект або повідомлення)
+        password,
+      });
+
+      login();
     } catch (error) {
       // Виводимо помилку у консоль для дебагу
       console.log(error);
-    } 
-  }, [email, password]);
+    }
+  }, [email, password, login]);
 
   return (
     <div className="relative min-h-screen w-full bg-[url('/images/hero.jpg')] bg-no-repeat bg-top bg-cover">
       <div className="absolute inset-0 z-10 bg-overlay-gradient" />
       <nav className="absolute top-0 left-0 right-0 z-20 px-6 sm:px-10 lg:px-37 py-6 max-w-[1600px] mx-auto flex justify-between items-center">
-        <img src="/images/logo.png" alt="Logo" className="h-10" />
+        <Image
+          src="/images/logo.png"
+          alt="Logo"
+          width={120}
+          height={40}
+          className="h-10 w-auto"
+          priority
+        />
       </nav>
       <main className="relative z-20 flex items-center justify-center min-h-screen px-6">
         <AudioPlayer />
@@ -69,12 +98,47 @@ const Auth = () => {
 
             <button
               // Кнопка реєстрації. ВАЖЛИВО: тип 'button', щоб не сабмітила форму стандартно
-              onClick={createAnAccount}
+              onClick={variant === "login" ? login : createAnAccount}
               type="button"
               className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-md mt-2 font-medium"
             >
               {variant === "login" ? "Sign In" : "Sign Up"}
             </button>
+            <div className="flex flex-row items-center gap-4 mt-4 justify-center">
+              <div
+                className="
+              w-10
+              h-10
+              bg-white
+              rounded-full
+              flex
+              items-center
+              justify-center
+              cursor-pointer
+              hover:opacity-80
+              transition
+              "
+              >
+                <FcGoogle size={30} />
+              </div>
+
+              <div
+                className="
+              w-10
+              h-10
+              bg-white
+              rounded-full
+              flex
+              items-center
+              justify-center
+              cursor-pointer
+              hover:opacity-80
+              transition
+              "
+              >
+                <FaGithub size={30} className="text-black" />
+              </div>
+            </div>
 
             <div className="flex flex-col gap-5 mt-2">
               <div className="flex justify-center">
@@ -102,7 +166,9 @@ const Auth = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center">
                 <span className="text-gray-400 text-sm">
-                  {variant === "login" ? "New to Netflix?" : "Already have an account?"}
+                  {variant === "login"
+                    ? "New to Netflix?"
+                    : "Already have an account?"}
                 </span>
                 <a
                   onClick={toggleVariant}

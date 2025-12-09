@@ -1,15 +1,20 @@
 @import "tailwindcss";
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
+@import "tailwindcss/utilities" layer(utilities);
 
 body {
-  @apply bg-zinc-900 h-full overflow-x-hidden;
+  background-color: #18181b;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 #__next {
-  @apply h-full;
+  height: 100%;
 }
 
 html {
-  @apply h-full;
+  height: 100%;
 }
 
 /* Overlay gradient for large screens; becomes solid black on tablet/phone */
