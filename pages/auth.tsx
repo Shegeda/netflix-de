@@ -14,30 +14,49 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [variant, setVariant] = useState("login");
+  const [authError, setAuthError] = useState("");
 
-  const toggleVariant = useCallback(() => {
+  const toggleVariant = useCallback((ev?: React.MouseEvent<HTMLAnchorElement>) => {
+    ev?.preventDefault();
+    setAuthError("");
     setVariant((currentVariant) =>
       currentVariant === "login" ? "register" : "login"
     );
   }, []);
 
+  const switchToLogin = useCallback((ev?: React.MouseEvent<HTMLAnchorElement>) => {
+    ev?.preventDefault();
+    setAuthError("");
+    setVariant("login");
+  }, []);
+
   const login = useCallback(async () => {
+    setAuthError("");
+
     try {
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
         callbackUrl: "/",
       });
 
+      if (result?.error) {
+        setAuthError("We couldn't sign you in. Please check your email and password.");
+        return;
+      }
+
       router.push("/");
     } catch (error) {
+      setAuthError("Something went wrong. Please try again.");
       console.log(error);
     }
   }, [email, password, router]);
 
   const createAnAccount = useCallback(async () => {
     // Функція для реєстрації нового користувача через AJAX (axios)
+    setAuthError("");
+
     try {
       await axios.post("/api/register", {
         email,
@@ -46,6 +65,12 @@ const Auth = () => {
 
       login();
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 422) {
+        setAuthError("An account with this email already exists.");
+        return;
+      }
+
+      setAuthError("We couldn't create your account. Please try again.");
       // Виводимо помилку у консоль для дебагу
       console.log(error);
     }
@@ -71,11 +96,33 @@ const Auth = () => {
             {variant === "login" ? "Sign In" : "Create an account"}
           </h1>
 
+          {authError && (
+            <div
+              role="alert"
+              className="mb-4 rounded bg-[#e87c03] px-4 py-3 text-sm text-white"
+            >
+              <p>{authError}</p>
+              {variant === "register" && (
+                <p className="mt-2">
+                  Want to continue watching?{" "}
+                  <a
+                    href="#"
+                    onClick={switchToLogin}
+                    className="font-semibold underline decoration-white/70 underline-offset-2 hover:decoration-white"
+                  >
+                    Sign in instead.
+                  </a>
+                </p>
+              )}
+            </div>
+          )}
+
           <form className="space-y-3">
             <label className="block">
               <Input
                 label="Email or mobile number"
                 onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                  setAuthError("");
                   setEmail(ev.target.value);
                 }}
                 id="email"
@@ -88,6 +135,7 @@ const Auth = () => {
               <Input
                 label="Password"
                 onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                  setAuthError("");
                   setPassword(ev.target.value);
                 }}
                 id="password"
